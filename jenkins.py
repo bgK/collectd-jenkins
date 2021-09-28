@@ -6,6 +6,7 @@ import json
 import pprint
 import time
 import sys
+import unicodedata
 
 import requests
 import urllib3
@@ -337,6 +338,9 @@ def prepare_and_dispatch_metric(module_config, name, value, _type, extra_dimensi
     """
     Prepares and dispatches a metric
     """
+    if type(name) is unicode:
+        name = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore')
+
     data_point = collectd.Values(plugin=PLUGIN_NAME)
     data_point.type_instance = name
     data_point.type = _type
@@ -426,7 +430,7 @@ def parse_and_post_metrics(module_config, resp, value_property):
             if (
                 metric in module_config["exclude_optional_metrics"]
                 or type(resp[metric][value_property]) is str
-                or type(resp[metric][value_preperty]) is unicode
+                or type(resp[metric][value_property]) is unicode
                 or type(resp[metric][value_property]) is bytes
                 or type(resp[metric][value_property]) is list
             ):
